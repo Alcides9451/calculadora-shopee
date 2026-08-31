@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Pró - Shopee 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ee4d2d;
+            --primary-hover: #d73c19;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --success: #2e7d32;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 24px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid var(--border);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header h2 {
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-main);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s ease;
+            background-color: #fcfcfc;
+            color: var(--text-main);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.15);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        button {
+            flex: 1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button.btn-export {
+            background-color: #edf2f7;
+            color: #4a5568;
+            border: 1px solid var(--border);
+        }
+
+        button.btn-export:hover {
+            background-color: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .result-box {
+            margin-top: 28px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #fff;
+            border: 1px solid #feebd8;
+            box-shadow: 0 4px 12px rgba(238, 77, 45, 0.08);
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+            color: var(--primary);
+            padding-bottom: 10px;
+            border-bottom: 1px solid #fee2e2;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .result-item strong {
+            color: var(--text-main);
+        }
+
+        .result-item.total {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .highlight-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .highlight-profit {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>📊 Calculadora Avançada Shopee</h2>
+    </div>
+    
+    <div class="form-group">
+        <label for="custoFornecedor">Custo do Fornecedor (R$):</label>
+        <input type="number" id="custoFornecedor" step="0.01" value="1.20">
+    </div>
+
+    <div class="form-group">
+        <label for="custoOperacional">Outros Custos (Embalagem, Imposto) (R$):</label>
+        <input type="number" id="custoOperacional" step="0.01" value="1.30">
+    </div>
+
+    <div class="form-group">
+        <label for="campanhaShopee">Participar de Grandes Campanhas (+2,5%)?</label>
+        <select id="campanhaShopee">
+            <option value="nao">Não (Taxas Padrão)</option>
+            <option value="sim">Sim (+2,5% de Comissão)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="margemDesejada">Margem de Lucro Líquida Desejada (%):</label>
+        <input type="number" id="margemDesejada" step="1" value="30">
+    </div>
+
+    <div class="btn-container">
+        <button onclick="calcularPrecoAvancado()">Calcular Preço Ideal</button>
+        <button class="btn-export" onclick="exportarResultado()">Copiar Dados</button>
+    </div>
+
+    <div class="result-box" id="resultBox">
+        <div class="result-title">🎯 Resultado do Cálculo</div>
+        
+        <div class="result-item total">
+            <span>Preço de Venda Sugerido:</span>
+            <span id="resPrecoVenda" class="highlight-price">R$ 0,00</span>
+        </div>
+        <div class="result-item">
+            <span>Alíquota de Comissão:</span>
+            <strong id="resPorcentagem">0%</strong>
+        </div>
+        <div class="result-item">
+            <span>Valor da Comissão:</span>
+            <strong id="resComissao">R$ 0,00</strong>
+        </div>
+        <div class="result-item">
+            <span>Taxa Fixa Shopee:</span>
+            <strong id="resTaxaFixa">R$ 0,00</strong>
+        </div>
+        <div class="result-item total">
+            <span>Lucro Líquido Real:</span>
+            <span id="resLucro" class="highlight-profit">R$ 0,00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ultimoResultado = null;
+
+    function calcularPrecoAvancado() {
+        const custoFornecedor = parseFloat(document.getElementById('custoFornecedor').value) || 0;
+        const custoOperacional = parseFloat(document.getElementById('custoOperacional').value) || 0;
+        const margemDesejadaPercentual = parseFloat(document.getElementById('margemDesejada').value) || 0;
+        const participaCampanha = document.getElementById('campanhaShopee').value === 'sim';
+        
+        const custosTotais = custoFornecedor + custoOperacional;
+        const margemDesejadaDecimal = margemDesejadaPercentual / 100;
+        const adicionalCampanha = participaCampanha ? 0.025 : 0;
+
+        function testarFaixa(comissaoBase, taxaFixaEstipulada, minPreco, maxPreco, éRegraProporcional) {
+            const comissaoTotalTotal = comissaoBase + adicionalCampanha;
+            let precoSimulado = 0;
+
+            if (éRegraProporcional) {
+                const divisor = 1 - comissaoTotalTotal - 0.50 - margemDesejadaDecimal;
+                if (divisor <= 0) return null; // Evita divisão por zero ou valor negativo
+                precoSimulado = custosTotais / divisor;
+            } else {
+                const divisor = 1 - comissaoTotalTotal - margemDesejadaDecimal;
+                if (divisor <= 0) return null;
+                precoSimulado = (custosTotais + taxaFixaEstipulada) / divisor;
+            }
+
+            if (precoSimulado >= minPreco && precoSimulado <= maxPreco) {
+                return {
+                    preco: precoSimulado,
+                    comissaoPercentual: comissaoTotalTotal,
+                    taxaFixa: éRegraProporcional ? (precoSimulado * 0.50) : taxaFixaEstipulada
+                };
+            }
+            return null;
+        }
+
+        // 1. Testa Faixa 1: Microprodutos (Até R$ 7,99) -> 20% comissão + 50% do valor como taxa fixa
+        let resultado = testarFaixa(0.20, 0, 0, 7.99, true);
+
+        // 2. Testa Faixa 2: Padrão Inicial (R$ 8,00 até R$ 79,99) -> 20% comissão + R$ 4,00 fixo
+        if (!resultado) resultado = testarFaixa(0.20, 4.00, 8.00, 79.99, false);
+
+        // 3. Testa Faixa 3: Intermediária 1 (R$ 80,00 até R$ 99,99) -> 14% comissão + R$ 16,00 fixo
+        if (!resultado) resultado = testarFaixa(0.14, 16.00, 80.00, 99.99, false);
+
+        // 4. Testa Faixa 4: Intermediária 2 (R$ 100,00 até R$ 199,99) -> 14% comissão + R$ 20,00 fixo
+        if (!resultado) resultado = testarFaixa(0.14, 20.00, 100.00, 199.99, false);
+
+        // 5. Testa Faixa 5: Avançada (R$ 200,00 para cima) -> 14% comissão + R$ 26,00 fixo
+        if (!resultado) resultado = testarFaixa(0.14, 26.00, 200.00, Infinity, false);
+
+        if (!resultado) {
+            alert("A margem de lucro solicitada é muito alta para cobrir as taxas das faixas disponíveis. Tente reduzir a margem de lucro esperada.");
+            return;
+        }
+
+        const precoFinal = resultado.preco;
+        const comissaoPercentualFinal = resultado.comissaoPercentual;
+        const taxaFixaFinal = resultado.taxaFixa;
+        const valorComissao = precoFinal * comissaoPercentualFinal;
+        const lucroLiquido = precoFinal - valorComissao - taxaFixaFinal - custosTotais;
+
+        ultimoResultado = {
+            venda: precoFinal.toFixed(2),
+            porcentagem: (comissaoPercentualFinal * 100).toFixed(1),
+            comissao: valorComissao.toFixed(2),
+            fixa: taxaFixaFinal.toFixed(2),
+            lucro: lucroLiquido.toFixed(2),
+            margem: margemDesejadaPercentual
+        };
+
+        const formatarMoeda = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+
+        document.getElementById('resPrecoVenda').innerText = formatarMoeda(precoFinal);
+        document.getElementById('resPorcentagem').innerText = `${(comissaoPercentualFinal * 100).toFixed(1)}%`;
+        document.getElementById('resComissao').innerText = formatarMoeda(valorComissao);
+        document.getElementById('resTaxaFixa').innerText = formatarMoeda(taxaFixaFinal);
+        document.getElementById('resLucro').innerText = formatarMoeda(lucroLiquido);
+
+        document.getElementById('resultBox').style.display = 'block';
+    }
+
+    function exportarResultado() {
+        if (!ultimoResultado) {
+            alert("Faça um cálculo antes de copiar os dados!");
+            return;
+        }
+
+        const texto = `Resumo da Precificação Shopee:\n` +
+            `• Preço Sugerido: R$ ${ultimoResultado.venda.replace('.', ',')}\n` +
+            `• Comissão: ${ultimoResultado.porcentagem}% (R$ ${ultimoResultado.comissao.replace('.', ',')})\n` +
+            `• Taxa Fixa: R$ ${ultimoResultado.fixa.replace('.', ',')}\n` +
+            `• Lucro Líquido: R$ ${ultimoResultado.lucro.replace('.', ',')} (${ultimoResultado.margem}%)`;
+
+        navigator.clipboard.writeText(texto).then(() => {
+            alert("Dados copiados para a área de transferência!");
+        }).catch(() => {
+            alert("Erro ao copiar os dados.");
+        });
+    }
+</script>
+
+</body>
+</html>
