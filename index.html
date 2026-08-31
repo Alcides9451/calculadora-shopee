@@ -244,87 +244,82 @@
 </div>
 
 <script>
-    let ultimoResultado = null;
+        let ultimoResultado = null;
 
-    function calcularPrecoAvancado() {
-        const custoFornecedor = parseFloat(document.getElementById('custoFornecedor').value) || 0;
-        const custoOperacional = parseFloat(document.getElementById('custoOperacional').value) || 0;
-        const margemDesejadaPercentual = parseFloat(document.getElementById('margemDesejada').value) || 0;
-        const participaCampanha = document.getElementById('campanhaShopee').value === 'sim';
-        
-        const custosTotais = custoFornecedor + custoOperacional;
-        const margemDesejadaDecimal = margemDesejadaPercentual / 100;
-        const adicionalCampanha = participaCampanha ? 0.025 : 0;
+        function calcularPrecoAvancado() {
+            const custoFornecedor = parseFloat(document.getElementById('custoFornecedor').value) || 0;
+            const custoOperacional = parseFloat(document.getElementById('custoOperacional').value) || 0;
+            const margemDesejadaPercentual = parseFloat(document.getElementById('margemDesejada').value) || 0;
+            const participaCampanha = document.getElementById('campanhaShopee').value === 'sim';
+            
+            const custosTotais = custoFornecedor + custoOperacional;
+            const margemDesejadaDecimal = margemDesejadaPercentual / 100;
+            const adicionalCampanha = participaCampanha ? 0.025 : 0;
 
-        function testarFaixa(comissaoBase, taxaFixaEstipulada, minPreco, maxPreco, éRegraProporcional) {
-            const comissaoTotalTotal = comissaoBase + adicionalCampanha;
-            let precoSimulado = 0;
+            function testarFaixa(comissaoBase, taxaFixaEstipulada, minPreco, maxPreco) {
+                const comissaoTotal = comissaoBase + adicionalCampanha;
+                const divisor = 1 - comissaoTotal - margemDesejadaDecimal;
+                
+                if (divisor <= 0) return null; // Evita divisão por zero ou margens impossíveis
 
-            if (éRegraProporcional) {
-                const divisor = 1 - comissaoTotalTotal - 0.50 - margemDesejadaDecimal;
-                if (divisor <= 0) return null; // Evita divisão por zero ou valor negativo
-                precoSimulado = custosTotais / divisor;
-            } else {
-                const divisor = 1 - comissaoTotalTotal - margemDesejadaDecimal;
-                if (divisor <= 0) return null;
-                precoSimulado = (custosTotais + taxaFixaEstipulada) / divisor;
+                const precoSimulado = (custosTotais + taxaFixaEstipulada) / divisor;
+
+                // Verifica se o preço calculado se encaixa perfeitamente na faixa testada
+                if (precoSimulado >= minPreco && precoSimulado <= maxPreco) {
+                    return {
+                        preco: precoSimulado,
+                        comissaoPercentual: comissaoTotal,
+                        taxaFixa: taxaFixaEstipulada
+                    };
+                }
+                return null;
             }
 
-            if (precoSimulado >= minPreco && precoSimulado <= maxPreco) {
-                return {
-                    preco: precoSimulado,
-                    comissaoPercentual: comissaoTotalTotal,
-                    taxaFixa: éRegraProporcional ? (precoSimulado * 0.50) : taxaFixaEstipulada
-                };
+            // 1. Até R$ 79,99 -> 20% comissão + R$ 4,00 fixo
+            let resultado = testarFaixa(0.20, 4.00, 0, 79.99);
+
+            // 2. De R$ 80,00 até R$ 99,99 -> 14% comissão + R$ 16,00 fixo
+            if (!resultado) resultado = testarFaixa(0.14, 16.00, 80.00, 99.99);
+
+            // 3. De R$ 100,00 até R$ 199,99 -> 14% comissão + R$ 20,00 fixo
+            if (!resultado) resultado = testarFaixa(0.14, 20.00, 100.00, 199.99);
+
+            // 4. De R$ 200,00 até R$ 499,99 -> 14% comissão + R$ 26,00 fixo
+            if (!resultado) resultado = testarFaixa(0.14, 26.00, 200.00, 499.99);
+
+            // 5. Acima de R$ 500,00 -> 14% comissão + R$ 28,00 fixo
+            if (!resultado) resultado = testarFaixa(0.14, 28.00, 500.00, Infinity);
+
+            if (!resultado) {
+                alert("A margem de lucro solicitada é muito alta para cobrir as taxas das faixas disponíveis. Tente reduzir a margem de lucro esperada.");
+                return;
             }
-            return null;
+
+            const precoFinal = resultado.preco;
+            const comissaoPercentualFinal = resultado.comissaoPercentual;
+            const taxaFixaFinal = resultado.taxaFixa;
+            const valorComissao = precoFinal * comissaoPercentualFinal;
+            const lucroLiquido = precoFinal - valorComissao - taxaFixaFinal - custosTotais;
+
+            ultimoResultado = {
+                venda: precoFinal.toFixed(2),
+                porcentagem: (comissaoPercentualFinal * 100).toFixed(1),
+                comissao: valorComissao.toFixed(2),
+                fixa: taxaFixaFinal.toFixed(2),
+                lucro: lucroLiquido.toFixed(2),
+                margem: margemDesejadaPercentual
+            };
+
+            const formatarMoeda = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+
+            document.getElementById('resPrecoVenda').innerText = formatarMoeda(precoFinal);
+            document.getElementById('resPorcentagem').innerText = `${(comissaoPercentualFinal * 100).toFixed(1)}%`;
+            document.getElementById('resComissao').innerText = formatarMoeda(valorComissao);
+            document.getElementById('resTaxaFixa').innerText = formatarMoeda(taxaFixaFinal);
+            document.getElementById('resLucro').innerText = formatarMoeda(lucroLiquido);
+
+            document.getElementById('resultBox').style.display = 'block';
         }
-
-        // 1. Testa Faixa 1: Microprodutos (Até R$ 7,99) -> 20% comissão + 50% do valor como taxa fixa
-        let resultado = testarFaixa(0.20, 0, 0, 7.99, true);
-
-        // 2. Testa Faixa 2: Padrão Inicial (R$ 8,00 até R$ 79,99) -> 20% comissão + R$ 4,00 fixo
-        if (!resultado) resultado = testarFaixa(0.20, 4.00, 8.00, 79.99, false);
-
-        // 3. Testa Faixa 3: Intermediária 1 (R$ 80,00 até R$ 99,99) -> 14% comissão + R$ 16,00 fixo
-        if (!resultado) resultado = testarFaixa(0.14, 16.00, 80.00, 99.99, false);
-
-        // 4. Testa Faixa 4: Intermediária 2 (R$ 100,00 até R$ 199,99) -> 14% comissão + R$ 20,00 fixo
-        if (!resultado) resultado = testarFaixa(0.14, 20.00, 100.00, 199.99, false);
-
-        // 5. Testa Faixa 5: Avançada (R$ 200,00 para cima) -> 14% comissão + R$ 26,00 fixo
-        if (!resultado) resultado = testarFaixa(0.14, 26.00, 200.00, Infinity, false);
-
-        if (!resultado) {
-            alert("A margem de lucro solicitada é muito alta para cobrir as taxas das faixas disponíveis. Tente reduzir a margem de lucro esperada.");
-            return;
-        }
-
-        const precoFinal = resultado.preco;
-        const comissaoPercentualFinal = resultado.comissaoPercentual;
-        const taxaFixaFinal = resultado.taxaFixa;
-        const valorComissao = precoFinal * comissaoPercentualFinal;
-        const lucroLiquido = precoFinal - valorComissao - taxaFixaFinal - custosTotais;
-
-        ultimoResultado = {
-            venda: precoFinal.toFixed(2),
-            porcentagem: (comissaoPercentualFinal * 100).toFixed(1),
-            comissao: valorComissao.toFixed(2),
-            fixa: taxaFixaFinal.toFixed(2),
-            lucro: lucroLiquido.toFixed(2),
-            margem: margemDesejadaPercentual
-        };
-
-        const formatarMoeda = (valor) => `R$ ${valor.toFixed(2).replace('.', ',')}`;
-
-        document.getElementById('resPrecoVenda').innerText = formatarMoeda(precoFinal);
-        document.getElementById('resPorcentagem').innerText = `${(comissaoPercentualFinal * 100).toFixed(1)}%`;
-        document.getElementById('resComissao').innerText = formatarMoeda(valorComissao);
-        document.getElementById('resTaxaFixa').innerText = formatarMoeda(taxaFixaFinal);
-        document.getElementById('resLucro').innerText = formatarMoeda(lucroLiquido);
-
-        document.getElementById('resultBox').style.display = 'block';
-    }
 
     function exportarResultado() {
         if (!ultimoResultado) {
